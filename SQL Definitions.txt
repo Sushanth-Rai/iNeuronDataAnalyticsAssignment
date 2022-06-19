@@ -1,0 +1,162 @@
+Primary Key: Primary Key is used to uniquely identify a record in a table.
+It is also by default the unique clustered index of the table, if there is no clustered index already exist in the table and hence it maintains the physical order of the data in the table.
+
+Foreign Key: Foreign Key is used to enforce database integrity.
+Foreign key in one table points to the Primary key in another table. FK constraint prevents invalid data being inserted in to the FK column.
+The values that we enter in to the FK column, has to be one of those values contained in the table it points to.
+
+Default Constraint: If you do not supply a value to a column, a pre-defined default value would be inserted.
+
+Cascading referential Integrity : By default, we cannot delete a record in a table if it is referred by a foriegn key in a another table.
+By setting up cascading referential integrity constraint, we can choose the action when such delete occurs
+1. No Action - This is the default behaviour. Delete/update will not be allowed. 
+2. Set Default - Pre-specified default value (defined as a default constraint) would replace the value in the foreign key column
+3. Set NULL - The value in FK column will be replaced by a Null
+4. Cascade - when a record is deleted in a table, then the dependent rows in the other table which has the FK will also be deleted
+
+Check Constraint : Check constraint is used to limit the range of value that can be entered for a column.
+For example, age of a person. It cannot be negative plus it is impractical if it's above 150.
+
+Identity column: If a column is marked as an iddentity column, then the values for this column is auto generated.
+we cannot explicitly assign values to this.
+If we want to assign values, then we need to set identity_insert on
+
+select SCOPE_IDENTITY() -- returns the last generated identity value in the same session and same scope
+select @@IDENTITY -- returns the last generated identity value in the same session and across scope
+select IDENT_CURRENT('Test2') --returns the last generated identity value in any session and any scope
+
+Unique Constraint : We use Unique constraint to enforce uniqueness of a column. I.e., column wouldn't allow any duplicate values
+Why unique constraint when we have a Primary key constraint? 
+Because we can have only one Primary Key constraint for a table. If we want to enforce uniqueness on multiple columns, use Unique constraint.
+Also, PK do not allow null while unique constaint does allow one null column
+
+Query for creating all constraints
+----------------------------------
+create table tblPerson(
+Id int not null,
+Name nvarchar(50) not null,
+Email nvarchar(50) not null,
+GenderId int default 3,
+Age int,
+constraint PK_tblPerson_Id primary Key(Id),
+constraint UQ_tblPerson_Email UNIQUE(Email),
+constraint CK_tblPerson_Age Check(Age >0 and Age < 150),
+constraint FK_tblPerson_GenderId_tblGender_Id foreign key (GenderId) references tblGender (Id)				
+)
+
+query for creating index
+------------------------
+create index index_name
+on tablename (columnname asc)
+
+ex: 
+create index IX_Employee_Salary
+on Employee (Salaray asc)
+
+
+Different types of Join
+-----------------------
+1. Cross Join - each row of table a is joined with each row of table b (cartesian product)
+2. Inner Join - only matching rows from both tabvles is returned
+3. Outer Join (left outer join, right outer join and full outer join)
+
+Give an example where cross join is useful
+------------------------------------------
+You have 20 people and each people need to perform a set of 15 tasks.
+Then you can store them seperately in Person and Task tables and then cross join them, thereby assigning all 15 tasks to each of the persons
+
+UNION Vs UNION ALL
+-------------------
+UNION is more resource intensive since it perform sort operation to remove duplicates.
+
+JOIN Vs UNION
+---------------
+UNION combines the result-set of two or more select queries whereas Join retrieves data from multiple tables based on the logical relationship between them.
+
+
+What is a stroed procedure
+-----------------------------
+A group transact SQL statements.
+If we have to execute a set of queries over and over again, we can save that specific query as stored proc and call it by it's name.
+
+
+What are the advantages of Stored Procedure
+-------------------------------------------
+1. Execution plan retention and reusability
+2. Reduce network traffic
+3. Code reusability and better maintanability
+4. Better security. Eg. users can be given access only to the stored proc and not for the tables.
+5. Avoids SQL injection attack
+
+
+What is SQL injection attack and how stored procedures help in avoiding it.
+---------------------------------------------------------------------------
+
+
+What are indexes?
+--------------------
+Indexes are used by queries to find data from tables quickly. They are created on table or a view.
+It improves the performance of the query. If there is no index, query has to scan every row in the table and this is called as table scan.
+
+What are different types of indexes?
+------------------------------------
+Clustered, Non Clustered index, Unique, filtered, XML etc.
+
+
+What is clustered index?
+--------------------------
+Clustered index determines the physical order of the data in the table. Hence there can be only one clustered index.
+A primary key will automatically create a unique clustered index if no clustered index already exists on the table.
+
+What is non clustered index?
+-------------------------------
+A table can have multiple non-clustered index. This index is stored separately. The index will have pointers to the storage location of the data in the table.
+
+Difference between clustered and non clustered index
+-----------------------------------------------------
+1. We can have only one clustered index per table where as we can have multiple non-clustered indexes
+2. Clustered index is faster than non-clustered index.
+Clustered index has already arranged the data in the table in a particular order.
+In case of non-clustered index, it is stored as a seperate object and hence the query has to first lookup the index and then locate the data in the table.
+3. Clustered index determines the order of the rows in the table and doesn't require seperate disk space whereas non-clustered index is stored as a seperate object from the table 
+and require storage space.
+
+What is Unique index
+--------------------
+Uniqueness is not a seperate index by itself, instead it is a property of both clustered and non clustered index.
+Unique index is used to enforce uniqueness of key values in the index.
+Clustered and non clustered indexes can be either unique or non-unique.
+
+Example where unique index can be used
+--------------------------------------
+Craete a table where no two employees can have same first and last name.
+or create an index on email id column. No two people can have same email id hence we can create a unique non-clustered index
+create unique nonclustered index UIX_Emplyee_Firstname_Lastname
+on employee (Firstname asc, Lastname asc)
+
+Difference between Unique index and unique key constraint
+---------------------------------------------------------
+There are no major difference. When we add a unique constraint, a unique index gets created.
+
+View
+----
+A view is a saved select query. It's a virtual table.
+
+
+Advantages of Views
+-------------------
+1. Views can be reduce complexibility of DB schema.
+For eg. there might be having non-IT users who might find it difficult to use complex queries like Join.
+Instead, IT users can create view with all the joins and non-IT users can run simple queries in View.
+2. Views can be used as a mechanism to implement row and column level security.
+row level security -> Using appropriate where clause.
+column level security -> Extract only required columns using select statement.
+
+What happens if you update, delete or insert data into a view?
+--------------------------------------------------------------
+The data in the underlying base tables will also gets changed. This is called updatable view and views in SQL server are updatable.
+
+
+Pivot operator
+---------------
+Pivot is an SQL server operator that can be used to turn unique values in one column into multiple columns in the output, giving an illusion of a rotated table.
